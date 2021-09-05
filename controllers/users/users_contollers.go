@@ -30,7 +30,7 @@ func CreateUser(c *gin.Context) {
 	if saveErr != nil {
 		//TODO:Handle UserCreation Error
 		return
-	}``
+	}
 
 	c.JSON(http.StatusCreated, result)
 }
