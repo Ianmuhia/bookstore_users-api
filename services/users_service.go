@@ -2,9 +2,14 @@ package services
 
 import (
 	"bookstore_users-api/domain/users"
-	"os/user"
+	"bookstore_users-api/utils/errors"
+	// "os/user"
 )
 
-func CreateUser(user users.User) (*user.User, error){
-return nil, nil
+func CreateUser(user users.User) (*users.User, *errors.RestErr) {
+	if err := user.Validate(); err != nil {
+		return nil, err
+	}
+
+	return &user, nil
 }
