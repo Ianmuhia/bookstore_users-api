@@ -33,6 +33,7 @@ func (user *User) Save() *errors.RestErr {
 		}
 		return errors.NewBadRequestError(fmt.Sprintf("user %d already exist", user.Id))
 	}
+
 	userDB[user.Id] = user
 	return nil
 }
