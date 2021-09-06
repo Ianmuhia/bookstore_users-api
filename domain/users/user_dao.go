@@ -4,6 +4,7 @@ import (
 	"bookstore_users-api/datasources/mysql/users_db"
 	"bookstore_users-api/utils/date_utils"
 	"bookstore_users-api/utils/errors"
+	"database/sql"
 	"fmt"
 )
 
@@ -35,9 +36,26 @@ func (user *User) Get() *errors.RestErr {
 func (user *User) Save() *errors.RestErr {
 	stmt, err := users_db.Client.Prepare(queryInsertUser)
 	if err != nil {
-		return errors.NewBadRequestError()
+		return errors.NewInternalServerError(err.Error())
 	}
+	defer func(stmt *sql.Stmt) {
+		err := stmt.Close()
+		if err != nil {
+			panic(err)
+		}
+	}(stmt)
 
+	user.DateCreated = date_utils.GetNowString()
+	insertResult, err := stmt.Exec(user.FirstName, user.LastName, user.Email, user.DateCreated)
+	if err != nil {
+		return errors.NewInternalServerError(fmt.Sprintf("error when trying to save user: %s", err.Error()))
+	}
+	userId, err := insertResult.LastInsertId()
+	if err != nil {
+		return errors.NewInternalServerError(fmt.Sprintf("error when trying to save user: %s", err.Error()))
+
+	}
+	user.Id = userId
 	current := userDB[user.Id]
 
 	if current != nil {
