@@ -10,27 +10,24 @@ import (
 )
 
 const (
-	queryInsertUser = "INSERT INTO users(first_name, last_name,email,date_created) VALUES (?,?,?,?);"
-)
-
-var (
-	userDB = make(map[int64]*User)
+	indexUniqueEmail = "users.users_email_uindex"
+	queryInsertUser  = "INSERT INTO users(first_name, last_name,email,date_created) VALUES (?,?,?,?);"
 )
 
 func (user *User) Get() *errors.RestErr {
 	if err := users_db.Client.Ping(); err != nil {
 		panic(err)
 	}
-	result := userDB[user.Id]
-	if result == nil {
-		return errors.NewNotFoundError(fmt.Sprintf("user %d not found", user.Id))
-	}
-
-	user.Id = result.Id
-	user.FirstName = result.FirstName
-	user.LastName = result.LastName
-	user.Email = result.Email
-	user.DateCreated = result.DateCreated
+	//result := userDB[user.Id]
+	//if result == nil {
+	//	return errors.NewNotFoundError(fmt.Sprintf("user %d not found", user.Id))
+	//}
+	//
+	//user.Id = result.Id
+	//user.FirstName = result.FirstName
+	//user.LastName = result.LastName
+	//user.Email = result.Email
+	//user.DateCreated = result.DateCreated
 	return nil
 }
 
@@ -49,7 +46,7 @@ func (user *User) Save() *errors.RestErr {
 	user.DateCreated = date_utils.GetNowString()
 	insertResult, err := stmt.Exec(user.FirstName, user.LastName, user.Email, user.DateCreated)
 	if err != nil {
-		if strings.Contains(err.Error(), "users.users_email_uindex") {
+		if strings.Contains(err.Error(), indexUniqueEmail) {
 			return errors.NewInternalServerError(fmt.Sprintf("email: %s already exists", user.Email))
 
 		}
@@ -61,16 +58,16 @@ func (user *User) Save() *errors.RestErr {
 
 	}
 	user.Id = userId
-	current := userDB[user.Id]
+	//current := userDB[user.Id]
 
-	if current != nil {
-		if current.Email == user.Email {
-			return errors.NewBadRequestError(fmt.Sprintf("email %s already registered", user.Email))
-
-		}
-		return errors.NewBadRequestError(fmt.Sprintf("user %d already exist", user.Id))
-	}
+	//if current != nil {
+	//	if current.Email == user.Email {
+	//		return errors.NewBadRequestError(fmt.Sprintf("email %s already registered", user.Email))
+	//
+	//	}
+	//	return errors.NewBadRequestError(fmt.Sprintf("user %d already exist", user.Id))
+	//}
 	user.DateCreated = date_utils.GetNowString()
-	userDB[user.Id] = user
+	//userDB[user.Id] = user
 	return nil
 }
