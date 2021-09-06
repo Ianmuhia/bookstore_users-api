@@ -62,6 +62,7 @@ func UpdateUser(c *gin.Context) {
 	result, err := services.UpdateUser(user)
 	if err != nil {
 		c.JSON(err.Status, err)
+		return
 	}
 	c.JSON(http.StatusOK, result)
 }
