@@ -12,22 +12,28 @@ import (
 const (
 	indexUniqueEmail = "users.users_email_uindex"
 	queryInsertUser  = "INSERT INTO users(first_name, last_name,email,date_created) VALUES (?,?,?,?);"
+	queryGetUser     = "SELECT  id, first_name ,last_name,email,date_created FROM users WHERE id=?;"
 )
 
 func (user *User) Get() *errors.RestErr {
 	if err := users_db.Client.Ping(); err != nil {
 		panic(err)
 	}
-	//result := userDB[user.Id]
-	//if result == nil {
-	//	return errors.NewNotFoundError(fmt.Sprintf("user %d not found", user.Id))
-	//}
-	//
-	//user.Id = result.Id
-	//user.FirstName = result.FirstName
-	//user.LastName = result.LastName
-	//user.Email = result.Email
-	//user.DateCreated = result.DateCreated
+	stmt, err := users_db.Client.Prepare(queryGetUser)
+	if err != nil {
+		return errors.NewInternalServerError(err.Error())
+	}
+	defer func(stmt *sql.Stmt) {
+		err := stmt.Close()
+		if err != nil {
+			panic(err)
+		}
+	}(stmt)
+	result := stmt.QueryRow(user.Id)
+	if err := result.Scan(&user.Id, &user.FirstName, &user.LastName, &user.Email, &user.DateCreated); err != nil {
+		fmt.Println(err)
+		return errors.NewInternalServerError(fmt.Sprintf("error when trying to get user %d : %s", user.Id, err.Error()))
+	}
 	return nil
 }
 
@@ -58,16 +64,8 @@ func (user *User) Save() *errors.RestErr {
 
 	}
 	user.Id = userId
-	//current := userDB[user.Id]
 
-	//if current != nil {
-	//	if current.Email == user.Email {
-	//		return errors.NewBadRequestError(fmt.Sprintf("email %s already registered", user.Email))
-	//
-	//	}
-	//	return errors.NewBadRequestError(fmt.Sprintf("user %d already exist", user.Id))
-	//}
 	user.DateCreated = date_utils.GetNowString()
-	//userDB[user.Id] = user
+
 	return nil
 }
