@@ -4,16 +4,29 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
+	"os"
 
 	_ "github.com/go-sql-driver/mysql"
 )
 
+const (
+	mysqlUsersUsername = "mysqlUsersUsername"
+	mysqlUsersSchema   = "mysqlUsersSchema"
+	mysqlUsersHost     = "mysqlUsersHost"
+	mysqlUsersPassword = "mysqlUsersPassword"
+)
+
 var (
 	Client *sql.DB
+
+	username = os.Getenv(mysqlUsersUsername)
+	host     = os.Getenv(mysqlUsersHost)
+	schema   = os.Getenv(mysqlUsersSchema)
+	password = os.Getenv(mysqlUsersPassword)
 )
 
 func init() {
-	dataSourceName := fmt.Sprintf("%s:%s@tcp(%s)/%s?charset=utf8", "root", "*#*Johnte2536", "127.0.0.1", "users_db")
+	dataSourceName := fmt.Sprintf("%s:%s@tcp(%s)/%s?charset=utf8", username, password, host, schema)
 
 	var err error
 	Client, err = sql.Open("mysql", dataSourceName)
