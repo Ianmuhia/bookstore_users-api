@@ -45,6 +45,12 @@ func GetUser(c *gin.Context) {
 }
 
 func UpdateUser(c *gin.Context) {
+	userId, userErr := strconv.ParseInt(c.Param("user_id"), 10, 64)
+	if userErr != nil {
+		err := errors.NewBadRequestError("invalid user id")
+		c.JSON(err.Status, err)
+		return
+	}
 	var user users.User
 
 	if err := c.ShouldBindJSON(&user); err != nil {
@@ -52,6 +58,7 @@ func UpdateUser(c *gin.Context) {
 		c.JSON(restErr.Status, restErr)
 		return
 	}
+	user.Id = userId
 	result, err := services.UpdateUser(user)
 	if err != nil {
 		c.JSON(err.Status, err)
