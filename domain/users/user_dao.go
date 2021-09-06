@@ -12,10 +12,9 @@ import (
 )
 
 const (
-	indexUniqueEmail = "users.users_email_uindex"
-	errorNoRows      = "no rows in result set"
-	queryInsertUser  = "INSERT INTO users(first_name, last_name,email,date_created) VALUES (?,?,?,?);"
-	queryGetUser     = "SELECT  id, first_name ,last_name,email,date_created FROM users WHERE id=?;"
+	errorNoRows     = "no rows in result set"
+	queryInsertUser = "INSERT INTO users(first_name, last_name,email,date_created) VALUES (?,?,?,?);"
+	queryGetUser    = "SELECT  id, first_name ,last_name,email,date_created FROM users WHERE id=?;"
 )
 
 func (user *User) Get() *errors.RestErr {
@@ -33,8 +32,9 @@ func (user *User) Get() *errors.RestErr {
 		}
 	}(stmt)
 	result := stmt.QueryRow(user.Id)
-	if err := result.Scan(&user.Id, &user.FirstName, &user.LastName, &user.Email, &user.DateCreated); err != nil {
-		if strings.Contains(err.Error(), errorNoRows) {
+	if getErr := result.Scan(&user.Id, &user.FirstName, &user.LastName, &user.Email, &user.DateCreated); getErr != nil {
+
+		if strings.Contains(getErr.Error(), errorNoRows) {
 			return errors.NewNotFoundError(fmt.Sprintf("user %d not found", user.Id))
 
 		}
