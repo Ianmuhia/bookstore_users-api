@@ -4,11 +4,8 @@ import (
 	"bookstore_users-api/datasources/mysql/users_db"
 	"bookstore_users-api/utils/date_utils"
 	"bookstore_users-api/utils/errors"
+	"bookstore_users-api/utils/mysql_utils"
 	"database/sql"
-	"fmt"
-	"strings"
-
-	"github.com/go-sql-driver/mysql"
 )
 
 const (
@@ -34,12 +31,8 @@ func (user *User) Get() *errors.RestErr {
 	result := stmt.QueryRow(user.Id)
 	if getErr := result.Scan(&user.Id, &user.FirstName, &user.LastName, &user.Email, &user.DateCreated); getErr != nil {
 
-		if strings.Contains(getErr.Error(), errorNoRows) {
-			return errors.NewNotFoundError(fmt.Sprintf("user %d not found", user.Id))
+		return mysql_utils.ParseError(getErr)
 
-		}
-
-		return errors.NewInternalServerError(fmt.Sprintf("error when trying to get user %d : %s", user.Id, err.Error()))
 	}
 	return nil
 }
@@ -59,22 +52,12 @@ func (user *User) Save() *errors.RestErr {
 	user.DateCreated = date_utils.GetNowString()
 	insertResult, saveErr := stmt.Exec(user.FirstName, user.LastName, user.Email, user.DateCreated)
 	if saveErr != nil {
-		sqlErr, ok := saveErr.(*mysql.MySQLError)
-		if !ok {
-			return errors.NewInternalServerError(fmt.Sprintf("error when trying to save user: %s", saveErr.Error()))
+		return mysql_utils.ParseError(saveErr)
 
-		}
-		switch sqlErr.Number {
-		case 1062:
-			return errors.NewInternalServerError(fmt.Sprintf("email: %s already exists", user.Email))
-
-		}
-
-		return errors.NewInternalServerError(fmt.Sprintf("error when trying to save user: %s", saveErr.Error()))
 	}
 	userId, err := insertResult.LastInsertId()
 	if err != nil {
-		return errors.NewInternalServerError(fmt.Sprintf("error when trying to save user: %s", err.Error()))
+		return mysql_utils.ParseError(err)
 
 	}
 	user.Id = userId

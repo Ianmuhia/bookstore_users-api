@@ -44,7 +44,17 @@ func GetUser(c *gin.Context) {
 
 }
 
-func SearchUser(c *gin.Context) {
-	c.String(http.StatusNotImplemented, "impliment me")
+func UpdateUser(c *gin.Context) {
+	var user users.User
 
+	if err := c.ShouldBindJSON(&user); err != nil {
+		restErr := errors.NewBadRequestError("invalid json body")
+		c.JSON(restErr.Status, restErr)
+		return
+	}
+	result, err := services.UpdateUser(user)
+	if err != nil {
+		c.JSON(err.Status, err)
+	}
+	c.JSON(http.StatusOK, result)
 }
