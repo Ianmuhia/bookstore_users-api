@@ -11,7 +11,7 @@ import (
 
 const (
 	errorNoRows           = "no rows in result set"
-	queryInsertUser       = "INSERT INTO users(first_name, last_name,email,date_created) VALUES (?,?,?,?);"
+	queryInsertUser       = "INSERT INTO users(first_name, last_name,email,date_created,status,password) VALUES (?,?,?,?,?,?);"
 	queryGetUser          = "SELECT  id, first_name ,last_name,email,date_created FROM users WHERE id=?;"
 	queryUpdateUser       = "UPDATE users SET first_name =?, last_name=?,email=? WHERE id=?"
 	queryDeleteUser       = "DELETE FROM users WHERE id=?"
@@ -53,8 +53,8 @@ func (user *User) Save() *errors.RestErr {
 		}
 	}(stmt)
 
-	user.DateCreated = date_utils.GetNowString()
-	insertResult, saveErr := stmt.Exec(user.FirstName, user.LastName, user.Email, user.DateCreated)
+	//user.DateCreated = date_utils.GetNowString()
+	insertResult, saveErr := stmt.Exec(user.FirstName, user.LastName, user.Email, user.DateCreated, user.Status, user.Password)
 	if saveErr != nil {
 		return mysql_utils.ParseError(saveErr)
 
