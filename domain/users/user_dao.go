@@ -2,7 +2,6 @@ package users
 
 import (
 	"bookstore_users-api/datasources/mysql/users_db"
-	"bookstore_users-api/utils/date_utils"
 	"bookstore_users-api/utils/errors"
 	"bookstore_users-api/utils/mysql_utils"
 	"database/sql"
@@ -13,9 +12,9 @@ const (
 	errorNoRows           = "no rows in result set"
 	queryInsertUser       = "INSERT INTO users(first_name, last_name,email,date_created,status,password) VALUES (?,?,?,?,?,?);"
 	queryGetUser          = "SELECT  id, first_name ,last_name,email,date_created FROM users WHERE id=?;"
-	queryUpdateUser       = "UPDATE users SET first_name =?, last_name=?,email=? WHERE id=?"
-	queryDeleteUser       = "DELETE FROM users WHERE id=?"
-	queryFindUserByStatus = "SELECT id, first_name, last_name,email,date_created,status FROM users WHERE status=?"
+	queryUpdateUser       = "UPDATE users SET first_name =?, last_name=?,email=? WHERE id=?;"
+	queryDeleteUser       = "DELETE FROM users WHERE id=?;"
+	queryFindUserByStatus = "SELECT id, first_name, last_name,email,date_created,status FROM users WHERE status=?;"
 )
 
 func (user *User) Get() *errors.RestErr {
@@ -53,7 +52,6 @@ func (user *User) Save() *errors.RestErr {
 		}
 	}(stmt)
 
-	//user.DateCreated = date_utils.GetNowString()
 	insertResult, saveErr := stmt.Exec(user.FirstName, user.LastName, user.Email, user.DateCreated, user.Status, user.Password)
 	if saveErr != nil {
 		return mysql_utils.ParseError(saveErr)
@@ -65,8 +63,6 @@ func (user *User) Save() *errors.RestErr {
 
 	}
 	user.Id = userId
-
-	user.DateCreated = date_utils.GetNowString()
 
 	return nil
 }
