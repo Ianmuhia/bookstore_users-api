@@ -13,8 +13,8 @@ var (
 	UsersService usersServiceInterface = &usersService{}
 )
 
-type usersService struct {
-}
+type usersService struct{}
+
 type usersServiceInterface interface {
 	GetUser(int64) (*users.User, *errors.RestErr)
 	CreateUser(users.User) (*users.User, *errors.RestErr)
