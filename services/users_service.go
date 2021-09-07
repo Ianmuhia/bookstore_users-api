@@ -35,16 +35,16 @@ func UpdateUser(isPartial bool, user users.User) (*users.User, *errors.RestErr) 
 		return nil, err
 	}
 	if isPartial {
-		if user.FirstName == "" {
+		if user.FirstName != "" {
 			currentUser.FirstName = user.FirstName
 		}
-		if user.LastName == "" {
+		if user.LastName != "" {
 			currentUser.LastName = user.LastName
 		}
-		if user.Email == "" {
+		if user.Email != "" {
 			currentUser.Email = user.Email
 		}
-		if user.FirstName == "" {
+		if user.FirstName != "" {
 			currentUser.FirstName = user.FirstName
 		}
 	} else {
