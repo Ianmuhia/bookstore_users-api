@@ -15,3 +15,21 @@ type PrivateUser struct {
 	Status      string `json:"status"`
 	//Password    string `json:"password"`
 }
+
+func (user *User) Marshall(isPublic bool) interface{} {
+	if isPublic {
+		return PublicUser{
+			Id:          user.Id,
+			DateCreated: user.DateCreated,
+			Status:      user.Status,
+		}
+	}
+	return PrivateUser{
+		Id:          user.Id,
+		FirstName:   user.FirstName,
+		LastName:    user.LastName,
+		Email:       user.Email,
+		DateCreated: user.DateCreated,
+		Status:      user.Status,
+	}
+}
