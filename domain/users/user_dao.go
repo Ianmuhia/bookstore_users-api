@@ -11,10 +11,10 @@ import (
 const (
 	errorNoRows           = "no rows in result set"
 	queryInsertUser       = "INSERT INTO users(first_name, last_name,email,date_created,status,password) VALUES (?,?,?,?,?,?);"
-	queryGetUser          = "SELECT  id, first_name ,last_name,email,date_created FROM users WHERE id=?;"
+	queryGetUser          = "SELECT  id, first_name ,last_name,email,date_created,status password FROM users WHERE id=?;"
 	queryUpdateUser       = "UPDATE users SET first_name =?, last_name=?,email=? WHERE id=?;"
 	queryDeleteUser       = "DELETE FROM users WHERE id=?;"
-	queryFindUserByStatus = "SELECT id, first_name, last_name,email,date_created,status FROM users WHERE status=?;"
+	queryFindUserByStatus = "SELECT id, first_name, last_name,email,date_created,status,password FROM users WHERE status=?;"
 )
 
 func (user *User) Get() *errors.RestErr {
@@ -32,7 +32,7 @@ func (user *User) Get() *errors.RestErr {
 		}
 	}(stmt)
 	result := stmt.QueryRow(user.Id)
-	if getErr := result.Scan(&user.Id, &user.FirstName, &user.LastName, &user.Email, &user.DateCreated); getErr != nil {
+	if getErr := result.Scan(&user.Id, &user.FirstName, &user.LastName, &user.Email, &user.DateCreated, &user.Status, &user.Password); getErr != nil {
 
 		return mysql_utils.ParseError(getErr)
 
@@ -131,7 +131,7 @@ func (user *User) Search(status string) ([]User, *errors.RestErr) {
 	results := make([]User, 0)
 	for rows.Next() {
 		var user User
-		if err := rows.Scan(&user.Id, &user.FirstName, &user.LastName, &user.Email, &user.DateCreated, &user.Status); err != nil {
+		if err := rows.Scan(&user.Id, &user.FirstName, &user.LastName, &user.Email, &user.DateCreated, &user.Status, &user.Password); err != nil {
 			return nil, mysql_utils.ParseError(err)
 		}
 		results = append(results, user)
