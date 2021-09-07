@@ -64,5 +64,5 @@ func DeleteUser(userId int64) *errors.RestErr {
 		Id: userId,
 	}
 
-	return user.Delete(user)
+	return user.Delete()
 }
