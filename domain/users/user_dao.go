@@ -2,6 +2,7 @@ package users
 
 import (
 	"bookstore_users-api/datasources/mysql/users_db"
+	"bookstore_users-api/logger"
 	"bookstore_users-api/utils/errors"
 	"bookstore_users-api/utils/mysql_utils"
 	"database/sql"
@@ -23,6 +24,7 @@ func (user *User) Get() *errors.RestErr {
 	}
 	stmt, err := users_db.Client.Prepare(queryGetUser)
 	if err != nil {
+		logger.Error("error when trying to prepare get statement", err)
 		return errors.NewInternalServerError(err.Error())
 	}
 	defer func(stmt *sql.Stmt) {
