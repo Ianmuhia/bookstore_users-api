@@ -9,15 +9,41 @@ import (
 )
 
 const (
-	errorNoRows           = "no rows in result set"
-	queryInsertUser       = "INSERT INTO users(first_name, last_name,email,date_created,status,password) VALUES (?,?,?,?,?,?);"
-	queryGetUser          = "SELECT  id, first_name ,last_name,email,date_created,status password FROM users WHERE id=?;"
-	queryUpdateUser       = "UPDATE users SET first_name =?, last_name=?,email=? WHERE id=?;"
-	queryDeleteUser       = "DELETE FROM users WHERE id=?;"
-	queryFindUserByStatus = "SELECT id, first_name, last_name,email,date_created,status,password FROM users WHERE status=?;"
+	errorNoRows                 = "no rows in result set"
+	queryInsertUser             = "INSERT INTO users(first_name, last_name,email,date_created,status,password) VALUES (?,?,?,?,?,?);"
+	queryGetUser                = "SELECT  id, first_name ,last_name,email,date_created,status password FROM users WHERE id=?;"
+	queryUpdateUser             = "UPDATE users SET first_name =?, last_name=?,email=? WHERE id=?;"
+	queryDeleteUser             = "DELETE FROM users WHERE id=?;"
+	queryFindUserByStatus       = "SELECT id, first_name, last_name,email,date_created,status,password FROM users WHERE status=?;"
+	queryFindByEmailAndPassword = "SELECT id, first_name, last_name,email,date_created,statusFROM users WHERE password=? AND email=?;"
 )
 
 func (user *User) Get() *errors.RestErr {
+	if err := users_db.Client.Ping(); err != nil {
+		panic(err)
+	}
+	stmt, err := users_db.Client.Prepare(queryGetUser)
+	if err != nil {
+		logger.Error("error when trying to prepare get statement", err)
+		return errors.NewInternalServerError("database error")
+	}
+	defer func(stmt *sql.Stmt) {
+		err := stmt.Close()
+		if err != nil {
+			panic(err)
+		}
+	}(stmt)
+	result := stmt.QueryRow(user.Id)
+	if getErr := result.Scan(&user.Id, &user.FirstName, &user.LastName, &user.Email, &user.DateCreated, &user.Status, &user.Password); getErr != nil {
+		logger.Error("error when trying to get user by id", getErr)
+		return errors.NewInternalServerError("database error")
+		//return mysql_utils.ParseError(getErr)
+
+	}
+	return nil
+}
+
+func (user *User) FindByEmailAndPassword() *errors.RestErr {
 	if err := users_db.Client.Ping(); err != nil {
 		panic(err)
 	}
