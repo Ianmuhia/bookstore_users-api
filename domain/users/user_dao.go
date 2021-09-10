@@ -47,9 +47,9 @@ func (user *User) FindByEmailAndPassword() *errors.RestErr {
 	if err := users_db.Client.Ping(); err != nil {
 		panic(err)
 	}
-	stmt, err := users_db.Client.Prepare(queryGetUser)
+	stmt, err := users_db.Client.Prepare(queryFindByEmailAndPassword)
 	if err != nil {
-		logger.Error("error when trying to prepare get statement", err)
+		logger.Error("error when trying to prepare get user by email and password statement", err)
 		return errors.NewInternalServerError("database error")
 	}
 	defer func(stmt *sql.Stmt) {
@@ -58,9 +58,9 @@ func (user *User) FindByEmailAndPassword() *errors.RestErr {
 			panic(err)
 		}
 	}(stmt)
-	result := stmt.QueryRow(user.Id)
+	result := stmt.QueryRow(user.Email, user.Password)
 	if getErr := result.Scan(&user.Id, &user.FirstName, &user.LastName, &user.Email, &user.DateCreated, &user.Status, &user.Password); getErr != nil {
-		logger.Error("error when trying to get user by id", getErr)
+		logger.Error("error when trying to get user by email and password", getErr)
 		return errors.NewInternalServerError("database error")
 		//return mysql_utils.ParseError(getErr)
 
