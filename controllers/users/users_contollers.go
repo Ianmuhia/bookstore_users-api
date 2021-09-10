@@ -113,6 +113,7 @@ func Login(c *gin.Context) {
 	user, err := services.UsersService.LoginUser(request)
 	if err != nil {
 		c.JSON(err.Status, err)
+		return
 	}
-	c.JSON(http.StatusOK, user)
+	c.JSON(http.StatusOK, user.Marshall(c.GetHeader("X-Public") == "true"))
 }

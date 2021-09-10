@@ -4,18 +4,20 @@ import (
 	"bookstore_users-api/datasources/mysql/users_db"
 	"bookstore_users-api/logger"
 	"bookstore_users-api/utils/errors"
+	"bookstore_users-api/utils/mysql_utils"
 	"database/sql"
 	"fmt"
+	"strings"
 )
 
 const (
-	errorNoRows                 = "no rows in result set"
+	//errorNoRows                 = "no rows in result set"
 	queryInsertUser             = "INSERT INTO users(first_name, last_name,email,date_created,status,password) VALUES (?,?,?,?,?,?);"
 	queryGetUser                = "SELECT  id, first_name ,last_name,email,date_created,status password FROM users WHERE id=?;"
 	queryUpdateUser             = "UPDATE users SET first_name =?, last_name=?,email=? WHERE id=?;"
 	queryDeleteUser             = "DELETE FROM users WHERE id=?;"
 	queryFindUserByStatus       = "SELECT id, first_name, last_name,email,date_created,status,password FROM users WHERE status=?;"
-	queryFindByEmailAndPassword = "SELECT id, first_name, last_name,email,date_created,statusFROM users WHERE password=? AND email=?;"
+	queryFindByEmailAndPassword = "SELECT id, first_name, last_name,email,date_created,status, password FROM users WHERE password=? AND email=? AND status=?;"
 )
 
 func (user *User) Get() *errors.RestErr {
@@ -58,8 +60,11 @@ func (user *User) FindByEmailAndPassword() *errors.RestErr {
 			panic(err)
 		}
 	}(stmt)
-	result := stmt.QueryRow(user.Email, user.Password)
+	result := stmt.QueryRow(user.Password, user.Email, StatusActive)
 	if getErr := result.Scan(&user.Id, &user.FirstName, &user.LastName, &user.Email, &user.DateCreated, &user.Status, &user.Password); getErr != nil {
+		if strings.Contains(getErr.Error(), mysql_utils.ErrorNoRows) {
+			return errors.NewNotFoundError("invalid user credentials")
+		}
 		logger.Error("error when trying to get user by email and password", getErr)
 		return errors.NewInternalServerError("database error")
 		//return mysql_utils.ParseError(getErr)
@@ -159,8 +164,6 @@ func (user *User) Search(status string) ([]User, *errors.RestErr) {
 		logger.Error("error when trying to prepare find users by status statement", err)
 		return nil, errors.NewInternalServerError("database error")
 
-		//return nil, errors.NewInternalServerError(err.Error())
-
 	}
 	defer func(stmt *sql.Stmt) {
 		err := stmt.Close()
@@ -172,8 +175,6 @@ func (user *User) Search(status string) ([]User, *errors.RestErr) {
 	if err != nil {
 		logger.Error("error when trying to find users by status", err)
 		return nil, errors.NewInternalServerError("database error")
-
-		//return nil, errors.NewInternalServerError(err.Error())
 
 	}
 	defer func(rows *sql.Rows) {
@@ -189,7 +190,6 @@ func (user *User) Search(status string) ([]User, *errors.RestErr) {
 			logger.Error("error when trying to scan row into user struct", err)
 			return nil, errors.NewInternalServerError("database error")
 
-			//return nil, mysql_utils.ParseError(err)
 		}
 		results = append(results, user)
 	}
